@@ -1,21 +1,49 @@
 library(shiny)
 library(tidyverse)
+library(DT)
+library(leaflet)
+library(usmap)
+library(ggplot2)
 
-TTC <- read_csv("https://raw.githubusercontent.com/stat545ubc-2023/TopTechCompanies/main/Top%2050%20US%20Tech%20Companies%202022%20-%202023.csv")
+Top50USCompanies2022 <- read_csv("https://raw.githubusercontent.com/stat545ubc-2023/TopTechCompanies/main/Top%2050%20US%20Tech%20Companies%202022%20-%202023.csv",
+                                 col_types = cols(
+                                   `Company Name` = col_character(),
+                                   `Industry` = col_character(),
+                                   `Sector` = col_character(),
+                                   `HQ State` = col_character(),
+                                   `Stock Name` = col_character(),
+                                   `Founding Year` = col_double(),
+                                   `Annual Revenue 2022-2023 (USD in Billions)` = col_double(),
+                                   `Market Cap (USD in Trillions)` = col_double(),
+                                   `Annual` = col_double(),
+                                   # Add other columns as needed
+                                 )
+)
 
 ui <- fluidPage(
-  sliderInput("id_slider", "Founding Year Range", min = 1950, max = 2023, 
+  sliderInput("id_slider", "Founding Year Range", min = 1890, max = 2023, 
               value = c(1990, 2010), width = "100%"),
   textOutput("result_text"),
   
   fluidRow(
+    column(12, 
+           plotOutput("Revenue")
+    )
+  ),
+  
+  fluidRow(
     column(6, 
-      plotOutput("Revenue"),
-      downloadButton("download_csv", "Download Table as CSV"),
-      tableOutput("Table")
+           DTOutput("Table"),
+           downloadButton("download_csv", "Download Table as CSV")
     ),
-    column(6, 
-      plotOutput("PieChart")
+    column(6,
+           leafletOutput("Map")
+    )
+  ),
+  
+  fluidRow(
+    column(12, 
+           plotOutput("PieChart")
     )
   )
 )
@@ -24,40 +52,38 @@ ui <- fluidPage(
 server <- function(input, output) {
   observe(print(input$id_slider))
   
-  output$Revenue <- renderPlot({
-    filtered_data <- TTC %>%
+  filtered_data <- reactive({
+    Top50USCompanies2022 %>%
       filter(`Founding Year` >= input$id_slider[1] & `Founding Year` <= input$id_slider[2])
-    
-    max_revenue_company <- filtered_data %>%
+  })
+  
+  output$Revenue <- renderPlot({
+    max_revenue_company <- filtered_data() %>%
       slice_max(order_by = `Annual Revenue 2022-2023 (USD in Billions)`)
     
-    ggplot(filtered_data, aes(
+    ggplot(filtered_data(), aes(
       x = reorder(`Company Name`, -`Annual Revenue 2022-2023 (USD in Billions)`), 
       y = `Annual Revenue 2022-2023 (USD in Billions)`, 
-      fill = `Company Name`
+      fill = factor(`Company Name` == max_revenue_company$`Company Name`, levels = c(FALSE, TRUE))
     )) +
       geom_col() +
-      geom_col(data = max_revenue_company, aes(fill = "Highlight"), color = "red", alpha = 0.6) +
-      theme(axis.text.x = element_text(angle = 30, hjust = 1)) +
       scale_fill_manual(
-        values = c("Highlight" = "red", "OtherCompanies" = "#023047", `Company Name` = "#023047")
+        values = c("#2b2d42", "#d90429"),
+        name = "Company",
+        labels = c("Other Companies", "Top Revenue Company")
       ) +
+      theme(axis.text.x = element_text(angle = 30, hjust = 1)) +
       guides(fill = guide_legend(override.aes = list(alpha = 1)))
   })
   
-  
-  
-  
-  output$Table <- renderTable({
-    TTC %>%
-      filter(`Founding Year` >= input$id_slider[1] & `Founding Year` <= input$id_slider[2]) %>%
-      arrange(desc(`Annual Revenue 2022-2023 (USD in Billions)`))
+  output$Table <- renderDT({
+    filtered_data() %>%
+      arrange(desc(`Annual Revenue 2022-2023 (USD in Billions)`)) %>%
+      datatable(options = list(dom = 't'))
   })
   
   output$result_text <- renderText({
-    filtered_data <- TTC %>%
-      filter(`Founding Year` >= input$id_slider[1] & `Founding Year` <= input$id_slider[2])
-    paste("There are", nrow(filtered_data), "results.")
+    paste("There are", nrow(filtered_data()), "results.")
   })
   
   output$download_csv <- downloadHandler(
@@ -65,15 +91,11 @@ server <- function(input, output) {
       paste("filtered_data", Sys.Date(), ".csv", sep = "_")
     },
     content = function(file) {
-      write.csv(TTC %>%
-                  filter(`Founding Year` >= input$id_slider[1] & `Founding Year` <= input$id_slider[2]),
-                file)
-    }
-  )
+      write.csv(filtered_data(), file)
+    })
   
   output$PieChart <- renderPlot({
-    TTC %>%
-      filter(`Founding Year` >= input$id_slider[1] & `Founding Year` <= input$id_slider[2]) %>%
+    filtered_data() %>%
       count(Sector) %>%
       ggplot(aes(x = "", y = n, fill = Sector)) +
       geom_bar(stat = "identity") +
@@ -81,6 +103,20 @@ server <- function(input, output) {
       coord_polar(theta = "y") +
       theme_void()
   })
-}
+  
+  output$Map <- renderPlot({
+    # Create a data frame with state names
+    state_data <- data.frame(state = state.abb, stringsAsFactors = FALSE)
+    
+    # Merge with the count data
+    merged_data <- merge(state_data, filtered_data() %>% count(`HQ State`, name = "Count"), 
+                         by.x = "state", by.y = "HQ State", all.x = TRUE)
+    
+    # Plot the map
+    plot_usmap(data = merged_data, values = "Count", color = "red") +
+      scale_fill_continuous(name = "Count", label = scales::comma) +
+      theme(legend.position = "right")
+  })
+  }
 
 shinyApp(ui = ui, server = server)
