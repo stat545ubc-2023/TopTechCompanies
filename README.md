@@ -1,7 +1,13 @@
 # TopTechCompanies
 
 The goal of this project is to take a dataset with information regarding the top 50 Tech Companies in the United States and to create a dashboard to analyze the data. The finished product is a Shiny 
-App hosted on shinyapps.io
+App hosted on shinyapps.io.
+
+### Data Source
+
+Dataset is open source taken from Kaggle. The link to the dataset download can be found here: https://www.kaggle.com/datasets/lamiatabassum/top-50-us-tech-companies-2022-2023-dataset
+- Note: Column "HQ State" was renamed to "state" for formatting purposes.
+- Note: I converted the names of the states in the "state" column to their associated 2-letter state code. This was done as it is the only data type that plotly allowed to create the United States heatmap.
 
 ## Feature Explanation
 
@@ -28,3 +34,7 @@ more than 50% are involved in Software related sectors.
 
 7. The seventh feature is a heatmap of the United States of America that breaks down the HQ state of each company. There is an integrated hover feature that allows the user to see the
 specific number of companies that are hosted in each state.
+
+## ShinyApp link
+
+https://andyrooooo16.shinyapps.io/TopTechCompanies/
