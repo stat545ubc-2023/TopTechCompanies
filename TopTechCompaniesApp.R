@@ -10,7 +10,7 @@ Top50USCompanies2022 <- read_csv("https://raw.githubusercontent.com/stat545ubc-2
                                    `Company Name` = col_character(),
                                    `Industry` = col_character(),
                                    `Sector` = col_character(),
-                                   `HQ State` = col_character(),
+                                   `state` = col_character(),
                                    `Stock Name` = col_character(),
                                    `Founding Year` = col_double(),
                                    `Annual Revenue 2022-2023 (USD in Billions)` = col_double(),
@@ -105,8 +105,8 @@ shinyServer(function(input, output) {
   
   output$Map <- renderPlot({
     state_data <- data.frame(state = state.abb, stringsAsFactors = FALSE)
-    merged_data <- merge(state_data, filtered_data() %>% count(`HQ State`, name = "Count"), 
-                         by.x = "state", by.y = "HQ State", all.x = TRUE)
+    merged_data <- merge(state_data, filtered_data() %>% count(`State`, name = "Count"), 
+                         by.x = "state", by.y = "state", all.x = TRUE)
     plot_usmap(data = merged_data, values = "Count", color = "red") +
       scale_fill_continuous(name = "Count", label = scales::comma) +
       theme(legend.position = "right")
