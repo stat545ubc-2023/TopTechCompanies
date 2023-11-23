@@ -15,8 +15,7 @@ Top50USCompanies2022 <- read_csv("https://raw.githubusercontent.com/stat545ubc-2
                                    `Founding Year` = col_double(),
                                    `Annual Revenue 2022-2023 (USD in Billions)` = col_double(),
                                    `Market Cap (USD in Trillions)` = col_double(),
-                                   `Annual` = col_double(),
-                                   # Add other columns as needed
+                                   `Annual` = col_double()
                                  )
 )
 
@@ -48,8 +47,7 @@ ui <- fluidPage(
   )
 )
 
-
-server <- function(input, output) {
+shinyServer(function(input, output) {
   observe(print(input$id_slider))
   
   filtered_data <- reactive({
@@ -92,7 +90,8 @@ server <- function(input, output) {
     },
     content = function(file) {
       write.csv(filtered_data(), file)
-    })
+    }
+  )
   
   output$PieChart <- renderPlot({
     filtered_data() %>%
@@ -105,18 +104,13 @@ server <- function(input, output) {
   })
   
   output$Map <- renderPlot({
-    # Create a data frame with state names
     state_data <- data.frame(state = state.abb, stringsAsFactors = FALSE)
-    
-    # Merge with the count data
     merged_data <- merge(state_data, filtered_data() %>% count(`HQ State`, name = "Count"), 
                          by.x = "state", by.y = "HQ State", all.x = TRUE)
-    
-    # Plot the map
     plot_usmap(data = merged_data, values = "Count", color = "red") +
       scale_fill_continuous(name = "Count", label = scales::comma) +
       theme(legend.position = "right")
   })
-  }
+})
 
 shinyApp(ui = ui, server = server)
