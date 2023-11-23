@@ -2,8 +2,8 @@ library(shiny)
 library(tidyverse)
 library(DT)
 library(leaflet)
-library(usmap)
 library(ggplot2)
+library(plotly)
 
 Top50USCompanies2022 <- read_csv("https://raw.githubusercontent.com/stat545ubc-2023/TopTechCompanies/main/Top%2050%20US%20Tech%20Companies%202022%20-%202023.csv",
                                  col_types = cols(
@@ -36,7 +36,7 @@ ui <- fluidPage(
            downloadButton("download_csv", "Download Table as CSV")
     ),
     column(6,
-           leafletOutput("Map")
+           plotlyOutput("Map")
     )
   ),
   
@@ -90,8 +90,7 @@ shinyServer(function(input, output) {
     },
     content = function(file) {
       write.csv(filtered_data(), file)
-    }
-  )
+    })
   
   output$PieChart <- renderPlot({
     filtered_data() %>%
@@ -103,14 +102,20 @@ shinyServer(function(input, output) {
       theme_void()
   })
   
-  output$Map <- renderPlot({
-    state_data <- data.frame(state = state.abb, stringsAsFactors = FALSE)
-    merged_data <- merge(state_data, filtered_data() %>% count(`State`, name = "Count"), 
-                         by.x = "state", by.y = "state", all.x = TRUE)
-    plot_usmap(data = merged_data, values = "Count", color = "red") +
-      scale_fill_continuous(name = "Count", label = scales::comma) +
-      theme(legend.position = "right")
+  output$Map <- renderPlotly({
+    # Create a data frame in the required format for the map
+    map_data <- filtered_data() %>%
+      count(state, name = "Count")
+    
+    # Create the plotly map
+    plot_ly(data = map_data, 
+            type = "choropleth",
+            locations = ~state,
+            z = ~Count,
+            locationmode = "USA-states") %>%
+      colorbar(title = "Count") %>%
+      layout(geo = list(scope = 'usa'))
   })
-})
+  })
 
 shinyApp(ui = ui, server = server)
