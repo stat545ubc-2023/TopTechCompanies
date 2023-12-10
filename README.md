@@ -1,4 +1,4 @@
-# TopTechCompanies
+# TopTechCompanies Assignment B3 & B4
 
 The goal of this project is to take a dataset with information regarding the top 50 Tech Companies in the United States and to create a dashboard to analyze the data. The finished product is a Shiny 
 App hosted on shinyapps.io.
@@ -11,7 +11,7 @@ Dataset is open source taken from Kaggle. The link to the dataset download can b
 
 ## Feature Explanation
 
-In this assignment, I explored a dataset that contained information regarding the top 50 Tech companies in 2022-2023. I decided to use the following features to break down the data
+In assignment B3, I explored a dataset that contained information regarding the top 50 Tech companies in 2022-2023. I decided to use the following features to break down the data
 
  1. I included a slider that allows the user to input the founding year or year range for companies they are interested in exploring. This slicer is particularly useful in analyzing
  the emergence of the tech sectors starting with Roper Technologies with Electronic Components.
@@ -35,6 +35,35 @@ more than 50% are involved in Software related sectors.
 7. The seventh feature is a heatmap of the United States of America that breaks down the HQ state of each company. There is an integrated hover feature that allows the user to see the
 specific number of companies that are hosted in each state.
 
-## ShinyApp link
 
+
+In assignment B4,  I expanded upon my previous app from Assignment B-3, introducing several enhancements:
+  
+1. Tabs Addition:
+      I incorporated two tabs. The first, named "Company Comparison," retains features from the previous assignment, offering a general overview of company information. The second tab, 
+      labeled "Financial Analysis," introduces two new scatter plots focused on analyzing the financial health of the companies.
+ 
+2. Enhanced Slicer Functionality:
+     I implemented a new slicer named "Select Companies" for each tab. When users choose a founding year range, this slicer dynamically displays the companies available within that timeframe. 
+     Users can then select specific companies for further exploration, enhancing customization. Notably, I included a "Select All" button for users to conveniently choose all companies within a
+     selected timeframe without the need for individual selections.
+ 
+3. Financial Health Scatter Plots:
+     Under the "Financial Analysis" tab, I created two scatter plots that process multiple columns of data, providing interpretable results for financial health analysis. Leveraging insights from 
+     the ggplot2 course, I incorporated various subfeatures to customize the size, shape, and color of data points.
+ 
+4. Interpretation Assistance:
+     Recognizing the potential complexity of interpreting scatter plots, especially for users without a finance background, I added two textboxes containing detailed descriptions on how to interpret 
+     the results from each scatterplot. This addition aims to enhance user understanding and facilitate meaningful analysis.
+   
+5. CSS Formatting Integration:
+     As a final touch, I integrated formatting using CSS to enhance the overall user experience (UX/UI). This includes adjustments to fonts, colors, sizing, and layout. These components collectively 
+     contribute to a personalized and user-friendly interface, making navigation more intuitive for users.
+
+## ShinyApp link
+Link for Assignment B-3
+
+https://andyrooooo16.shinyapps.io/TopTechCompanies-AssignmentB3/
+
+Link for Assignment B-4
 https://andyrooooo16.shinyapps.io/TopTechCompanies/
